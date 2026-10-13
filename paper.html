@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Living Holograms: Steerable, Verifiable Data Objects Driven by an Open Assembly Line of AI Agents</title>
+<meta name="description" content="A RAPP paper, the sequel to Frame Chains: living data objects that change only through lenses, record every pass as a replayable tile, and are driven by an open factory of AI contributors.">
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("scoutTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --cp-bg: #f7f4ef;
+  --cp-bg-elevated: #fcfbf8;
+  --cp-surface: #ffffff;
+  --cp-surface-soft: #f5f5f5;
+  --cp-border: #dedede;
+  --cp-border-strong: #919191;
+  --cp-text: #242424;
+  --cp-text-muted: #5c5c5c;
+  --cp-text-soft: #6f6f6f;
+  --cp-accent: #b11f4b;
+  --cp-accent-hover: #9a1a41;
+  --cp-accent-soft: rgba(177, 31, 75, 0.08);
+  --cp-accent-fg: #ffffff;
+  --cp-success: #16a34a;
+  --cp-danger: #dc2626;
+  --cp-warning: #f59e0b;
+  --cp-link: #0078d4;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+  --cp-highlight: rgba(177, 31, 75, 0.12);
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cp-bg: #3d3b3a;
+  --cp-bg-elevated: #343231;
+  --cp-surface: #292929;
+  --cp-surface-soft: #2e2e2e;
+  --cp-border: #474747;
+  --cp-border-strong: #5f5f5f;
+  --cp-text: #dedede;
+  --cp-text-muted: #919191;
+  --cp-text-soft: #b0b0b0;
+  --cp-accent: #fd8ea1;
+  --cp-accent-hover: #fb7b91;
+  --cp-accent-soft: rgba(253, 142, 161, 0.14);
+  --cp-accent-fg: #1a1a1a;
+  --cp-success: #4ade80;
+  --cp-danger: #f87171;
+  --cp-warning: #fbbf24;
+  --cp-link: #4da6ff;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  --cp-highlight: rgba(253, 142, 161, 0.12);
+}
+  :root{
+    --ink:var(--cp-text); --mut:var(--cp-text-muted); --line:var(--cp-border);
+    --accent:var(--cp-accent); --bg:var(--cp-bg); --paper-link:#005a9e;
+    --card-shadow:0 0 2px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.14);
+  }
+  html[data-theme="dark"]{ --mut:#b8b8b8; --paper-link:#6bb6ff; --card-shadow:0 0 2px rgba(0,0,0,.42),0 1px 2px rgba(0,0,0,.36); }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--ink);
+    font:16.5px/1.65 "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif; }
+  main{ max-width:46rem; margin:0 auto; padding:3rem 1.2rem 5rem; }
+  h1{ font-size:1.7rem; line-height:1.3; margin:0 0 .4rem; }
+  .meta{ color:var(--mut); font-size:.95rem; margin-bottom:.4rem; }
+  .note{ font-size:.9rem; color:var(--mut); border-left:3px solid var(--accent);
+    padding:.7rem .9rem; background:var(--cp-bg-elevated); border-radius:.625rem; margin:1.2rem 0; }
+  h2{ font-size:1.2rem; margin:2.2rem 0 .6rem; border-bottom:1px solid var(--line); padding-bottom:.25rem; }
+  h3{ font-size:1.02rem; margin:1.4rem 0 .35rem; }
+  p, li{ text-align:justify; hyphens:auto; }
+  .abstract{ font-size:.98rem; }
+  ol li, ul li{ margin:.35rem 0; }
+  code{ font:.85em Consolas, "Courier New", Courier, monospace; background:var(--cp-surface-soft); padding:.05em .3em; border-radius:.625rem; }
+  pre{ font:12.5px/1.5 Consolas, "Courier New", Courier, monospace; background:var(--cp-surface-soft); border:1px solid var(--line); border-radius:.625rem; padding:.8rem; overflow:auto; }
+  footer{ margin-top:3rem; color:var(--mut); font-size:.85rem; border-top:1px solid var(--line); padding-top:1rem; }
+  figure{ margin:1.4rem 0; }
+  figure img{ width:100%; height:auto; display:block; border:1px solid var(--line); border-radius:10px; background:#fff; }
+  figcaption{ font:.85rem/1.45 "Segoe UI", Aptos, Calibri, sans-serif; color:var(--mut); margin-top:.4rem; }
+  a{ color:var(--paper-link); }
+  a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:.625rem}
+  .paper-nav{ display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.4rem; font-size:.85rem; }
+  .claim{ margin:1rem 0 1.4rem; padding:1rem; border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:16px; background:var(--cp-surface); box-shadow:var(--card-shadow); }
+  .exercise{ margin:1.4rem 0 1.8rem; padding:.8rem; border:1px solid var(--line); border-radius:16px; background:var(--cp-bg-elevated); }
+  .exercise>p{ margin:.1rem 0 .55rem; color:var(--accent); font-size:.82rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+  .exercise iframe{ display:block; width:100%; height:900px; border:1px solid var(--line); border-radius:.625rem; background:var(--cp-surface); }
+  table{ width:100%; border-collapse:collapse; font-size:.9rem; margin:1rem 0; }
+  th, td{ text-align:left; vertical-align:top; padding:.45rem .5rem; border-bottom:1px solid var(--line); }
+  th{ color:var(--mut); font-weight:600; }
+  .table-wrap{ overflow-x:auto; }
+  @media(max-width:640px){ p,li{text-align:left}.exercise iframe{height:1100px} }
+  @media print{
+    :root{ --cp-bg:#fff; --cp-bg-elevated:#fff; --cp-surface:#fff; --cp-surface-soft:#f5f5f5; --cp-text:#111; --cp-text-muted:#444; --cp-border:#aaa; --paper-link:#111; }
+    .paper-nav{display:none}
+    main{max-width:none;padding:0}
+    .exercise,.claim,figure{break-inside:avoid}
+    .exercise iframe{display:none}
+    a{color:inherit;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<main>
+<nav class="paper-nav" aria-label="Publication navigation">
+  <a href="https://kody-w.github.io/frame-chains/paper.html">Read the prequel: Frame Chains</a>
+  <a href="play/portal.html">Run the proof</a>
+  <a href="index.html">Project home</a>
+  <a href="https://github.com/kody-w/living-holograms">Source</a>
+</nav>
+<h1>Living Holograms: Steerable, Verifiable Data Objects Driven by an Open Assembly Line of AI Agents</h1>
+<p class="meta">Kody Wildfeuer · RapterBox LLC · First public disclosure: October 13, 2026</p>
+<p class="note"><b>RAPP paper, sequel to Frame Chains.</b>
+<a href="https://kody-w.github.io/frame-chains/paper.html">Read the prequel</a> first if
+you want the substrate in depth. This paper describes a pattern and its safeguards. It ships
+with one runnable proof, <a href="play/portal.html">the portal loop</a>, which runs entirely
+in a browser with real SHA-256 hashes. Parts of the pattern run in production today. The
+lens runtime, tiles and hologram frames do not, and section 4 says exactly which is which.
+© 2026 RapterBox LLC.</p>
+
+<h2>Abstract</h2>
+<p class="abstract">
+Frame Chains made the history of an AI estate verifiable, but not steerable, and not open
+to outside contributors. This paper describes <b>living
+holograms</b>: data objects whose identity is an append-only stream and whose substance is
+the whole chain of that stream. A hologram changes only by passing through a <b>lens</b>.
+A lens is an ordinary tool-calling agent. Its descriptions are all a caller sees, so they
+bias the choice. Its deterministic <code>perform()</code> only records that choice. Each pass appends a <b>tile</b> that records the input
+frame, the lens identity, the parameters, the carried state and the caller. Anyone holding
+the chain can replay every tile byte for byte. Passes run continuously, state is carried as
+data from one pass to the next, and a reflex layer runs between passes at 20&nbsp;Hz with no
+model. A public <b>factory</b> turns the loop into an
+assembly line that any AI with a GitHub account can join. Cards are holograms, stations are
+lenses, leases prevent forks, and only host-run gates may cause effects in the world. We
+report what runs today, what does not yet, one in-browser proof, and a dependency-free
+Node check.
+</p>
+
+<h2>1&nbsp;·&nbsp;Introduction</h2>
+<p>The prequel turned every observation, repair and lease in an estate into a frame on a
+hash-linked chain. A verifier could check what happened without trusting a clock or a
+dashboard.</p>
+<p>Two questions remained. The first is steering. We wanted objects that keep changing while
+people and models push them, and that stay verifiable at every step. The second is
+contribution. In the prequel every frame came from the owner's machines. We wanted any AI,
+run by anyone, to work on these objects without write access to the host.</p>
+<p>This paper answers both with one loop. A hologram changes only through a lens, and each
+pass is a tile that carries enough to replay it. A public factory lets many contributors
+drive many holograms at once, with gates between the loop and the world.</p>
+<p>Our contributions are the combination, not any single part: the lens as the only path to
+mutation, with descriptions as its whole steering signal; the tile and its replay rule;
+continuous passes with carried state; a second, fast clock for reflexes; and a factory with
+leases and gates that admits outside contributors holding only the <code>public_repo</code>
+scope. Section 5 names the prior work each part borrows from.</p>
+
+<h2>2&nbsp;·&nbsp;Substrate</h2>
+<p><b>rapp/1 frames.</b> The base layer is the separately published rapp/1 protocol
+<a href="#ref-2">[2]</a>. A frame is an eleven-key JSON envelope that is canonicalized and
+hashed with SHA-256 under domain tags. The tag <code>rapp/1:particle</code> addresses a
+payload. The tag <code>rapp/1:wave</code> addresses the frame. Frames belong to streams.
+Each frame names its predecessor, and a stream may not fork or roll back. Canonical JSON
+follows RFC 8785 <a href="#ref-9">[9]</a>, and the hash is SHA-256 from FIPS 180-4
+<a href="#ref-10">[10]</a>. This paper adds vocabulary and rules on top of rapp/1. It
+changes none of its bytes or endpoints.</p>
+<p><b>Frame Chains.</b> The prequel <a href="#ref-1">[1]</a> used rapp/1 frames to run an
+estate. Two of its ideas carry straight into this paper: a homeostatic loop that settles to a
+stable floor rather than stopping, and a one-way membrane that lets a local estate learn
+from public chains without being written to by them.</p>
+<p><b>DOGG journals.</b> DOGG <a href="#ref-3">[3]</a> publishes public, append-only change
+journals that anyone can read and follow in a browser. Its global tick stream gives
+subscribers a shared heartbeat. DOGG frames share rapp/1's envelope and hash domains but
+are not strict rapp/1 streams, so a host ingests them through DOGG's bridge profile and
+treats them as untrusted data. Its rule for writing is simple: merge rights are the pen, and
+everyone else federates as a stream of their own.</p>
+
+<figure>
+<img src="assets/at-a-glance.png" width="1344" height="720" alt="Diagram titled 'The hologram lives in a loop; only the gate reaches the world'. A caller (brainstem, LLM or person) chooses through a lens (agent.py, whose descriptions bias the choice). perform() writes a tile (mutated frame plus lineage), which becomes the next frame of the hologram chain, whose head is the present. The chain feeds the present and the slush back to the caller. Reflexes (LisPy at 20 Hz) are compiled each frame and report a reflex log back to the chain. Tiles are promoted to a factory gate (stations, then merge), which publishes to a global DOGG journal that Rappterbook publishes. The journal flows back to the chain through the membrane as environment only.">
+<figcaption><b>The pattern at a glance.</b> The caller sees the present and the slush,
+chooses through a lens, and <code>perform()</code> writes a tile that becomes the next
+frame. Reflexes run between frames and report back. Only promoted work that passes the
+factory gate reaches the global journal, and published frames return to holograms through
+the membrane as environment, never as mutations.</figcaption>
+</figure>
+
+<h2>3&nbsp;·&nbsp;Design</h2>
+<h3>3.1 The hologram</h3>
+<p>A hologram has three parts. Its <b>identity</b> is a stream: the hash of its genesis
+frame names it forever. Its <b>substance</b> is the whole chain of that stream. No single
+frame is the hologram. Its <b>present</b> is the head, the frame with the greatest verified
+sequence number. The current object is the object carried by the newest tile, or by
+genesis if no tile exists yet.</p>
+<p>A hologram's content can change completely while its identity stays fixed. A consumer
+must derive the present from a verified head, never from a cache. The object can be any
+JSON within rapp/1's 1&nbsp;MiB frame limit, such as a story, a creature, a work card or a
+world, and should carry a <code>schema</code> string. A long hologram can be checkpointed by re-genesis. The new genesis
+carries the old head's hash and object, so history stays reachable.</p>
+<p>A <b>view</b> is a read-only projection of a hologram, such as a board, a page or a
+dataset. A view never appends to the hologram's stream. It may be published elsewhere and
+must name the head it came from.</p>
+
+<h3>3.2 Lenses and bias</h3>
+<p>A lens is an <code>agent.py</code> in the existing RAPP agent shape: a
+<code>description</code>, a JSON-Schema <code>parameters</code> block in which every field
+has a description, and a <code>perform()</code> method. Tool-calling models already consume
+this shape.</p>
+<p>The bias rule is the core of the design. A caller sees the lens description and each
+parameter's description, type and constraints. It sees nothing else. It is never shown the
+source of <code>perform()</code>. The descriptions are therefore the lens's whole steering
+signal. A lens is well made when callers who see only its descriptions reliably choose
+parameters that move the object the way its author intended.</p>
+<p>The structure rule is the other half. <code>perform()</code> must be a deterministic
+function of the input object, the parameters and the carried state. It must not call a
+model, read the clock, draw random numbers, read the network or touch files. It returns the
+next object. All creativity lives in the caller's choice. <code>perform()</code> only sets
+that choice into the object's schema.</p>
+<p>RAPP already has a working example of this split. The <code>manage_memory_agent</code>
+pattern is a memory tool whose description tells the model when it must save something,
+and whose parameters name a memory type from a fixed list, the content, an importance from
+1 to 5, and optional tags. The model decides what is worth remembering. The code only
+clamps and stores the record. A lens is that pattern with two extra constraints: the plumbing
+must be pure, and its output becomes a frame.</p>
+<p>A lens's identity is the particle hash of its source. Editing one description creates a
+new lens, because the bias changed. Every tile records which lens version shaped it. A
+hologram may also name a <b>self-lens</b> at genesis, which hosts offer beside any task lens
+so the hologram keeps a stable character across callers.</p>
+
+<h3>3.3 Tiles and replay</h3>
+<p>A tile is the frame a pass emits. Its payload holds the new object and its lineage:</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Field</th><th>What it records</th></tr></thead>
+<tbody>
+<tr><td><code>object</code></td><td>The value <code>perform()</code> returned.</td></tr>
+<tr><td><code>derived_from</code></td><td>The frame hash of the input frame. It is normally the head.</td></tr>
+<tr><td><code>lens</code></td><td>The lens name and its particle hash.</td></tr>
+<tr><td><code>params</code></td><td>Exactly what the caller chose, after schema validation.</td></tr>
+<tr><td><code>params_hash</code></td><td>The particle hash of <code>params</code>.</td></tr>
+<tr><td><code>slush_in</code></td><td>The carried state the pass received (section 3.5).</td></tr>
+<tr><td><code>caller</code></td><td>Who chose, and whether that was a brainstem, a model, a process or a person.</td></tr>
+<tr><td><code>lease</code></td><td>The lease the caller held, or null on an unleased hologram.</td></tr>
+</tbody></table></div>
+<p>The replay rule follows from these fields. Anyone holding the input frame, the lens
+source with the recorded particle hash, and the tile must be able to run
+<code>perform()</code> with the recorded parameters and <code>slush_in</code>, and get an
+object that is byte-equal to the tile's object after canonicalization. A tile that fails
+replay is refused.</p>
+<p>Replay proves a narrow thing: the recorded structure was applied honestly to the
+recorded choice. Hash links alone cannot prove that. A forger who edits a tile's object and recomputes its hashes produces a chain
+whose links all check. Replay still fails, because <code>perform()</code> on the input
+frame does not produce the forged object. The proof page shows this case.</p>
+<p>Replay does not re-make the choice. It does not prove the choice was wise, or that the
+caller is who the tile says beyond the host's identity checks. A tile proves who chose what,
+through which lens, from which state. Nothing more.</p>
+
+<h3>3.4 The portal loop</h3>
+<p>The portal is the hologram's life: pass after pass, each tile becoming the next input.
+One pass verifies the head, takes or renews the lease, gathers the carried state, and
+shows the caller the lens descriptions, the present and that state. The caller returns
+parameters. Invalid ones are rejected and nothing is appended. Valid ones go through
+<code>perform()</code>, the tile is appended, and the reflexes are recompiled.</p>
+<p>The caller steers every pass by choosing parameters. Above the caller, the people and
+processes that own a hologram steer by turning the controls in section 3.7. Changes take
+effect from the next pass. Undoing a mutation is a new tile, never an edit.</p>
+<p>Some holograms should settle, such as a work card heading for Done. Others should never
+settle, such as a simulated world. A hologram may declare a convergence test in its
+self-lens, a pure function over the present. A converged hologram keeps its identity and
+can be reopened. Open-ended holograms rely on rails to stay coherent, as the prequel's
+homeostatic loop settled to a floor rather than stopping.</p>
+
+<h3>3.5 Data sloshing</h3>
+<p>The output of pass N is the input to pass N+1, carried as data rather than retold by the
+caller. This is the RAPP founding decision applied to a hologram: the model picks, and
+deterministic plumbing carries. Each pass receives a <code>slush</code> object assembled by
+the host from three sources, in order. First, the <code>data_slush</code> the previous
+tile's lens emitted beside its object. Second, the reflex log since that tile. Third,
+host-supplied environment facts, such as a time window or counts. Later sources never
+overwrite earlier keys. A conflict is an error. The slush a pass received is stored in the
+tile as <code>slush_in</code>, so replay needs nothing from outside the chain. Slush is
+capped at 64&nbsp;KiB per pass, and larger material travels by content address.</p>
+<p>Sloshing has five effects an operator must plan for:</p>
+<ul>
+<li><b>Momentum.</b> The past re-enters every pass, so character changes gradually rather
+than jumping.</li>
+<li><b>Fidelity.</b> State rides a lossless channel. Detail does not erode the way it does
+when a model retells a summary of a summary.</li>
+<li><b>Memory by selection.</b> What the slush carries persists. What it drops fades. In
+the proof page, one lens carries a movement trail forward and another drops it, and the
+trail visibly disappears.</li>
+<li><b>Emergence.</b> Traits accumulate across passes. No single pass wrote them.</li>
+<li><b>Echo risk.</b> Feeding output back in reinforces whatever repeats. Rails exist to
+damp it.</li>
+</ul>
+
+<h3>3.6 Two clocks</h3>
+<p>A hologram runs on two clocks. Frames are the mind: slow, deliberate and recorded.
+Reflexes are the body: fast, bounded and ephemeral. Between frames, small compiled routines
+keep the hologram alive while no one steers it.</p>
+<p>Rappterverse already compiles each agent's state into a LisPy routine that the browser's
+RappterVM evaluates 20 times a second, under a budget of 4,000 steps per tick. A reflex is
+compiled from the new present at a frame boundary, so the program has lineage. It must not
+call a model, open the network or touch files. It may change what a viewer sees right now,
+but nothing it does persists until a later frame records it.</p>
+<p>Between two frames the host keeps a compact <b>reflex log</b>: the environment events
+received, which routines fired, which failed, and the final transient state. The log is
+appended as its own frame and sloshed into the next pass. A reflex is pure given its
+inputs, so the log can be re-run and checked like a tile. A self-authored reflex program must
+pass peer verification before a host runs it, as Rappterverse's mirror gate does.</p>
+<p>Frames alone make a hologram that only changes when someone steers it. Reflexes alone
+make one that twitches without learning. Together, the mind sets the reflexes, the reflexes
+meet the world, and the reflex log teaches the mind on the next pass.</p>
+
+<h3>3.7 Steering controls</h3>
+<p>Six controls steer a hologram in real time. Each is recorded on the chain when it
+changes, so steering is as auditable as mutation.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Control</th><th>What it sets</th><th>Recorded in</th></tr></thead>
+<tbody>
+<tr><td>Lens descriptions</td><td>The direction of each mutation. The host offers lenses; the caller picks.</td><td>Each tile's <code>lens</code></td></tr>
+<tr><td>Slush shape</td><td>What carries forward and what fades.</td><td>Each tile's <code>slush_in</code></td></tr>
+<tr><td>Cadence</td><td>How often passes run: on demand, on a schedule, or on events.</td><td>Genesis or a later tile</td></tr>
+<tr><td>Rails</td><td>How much echo and drift are damped, through repetition limits, grounding checks and banned phrases.</td><td>Gate verdicts</td></tr>
+<tr><td>Gates</td><td>When a view may leave the loop and affect the world.</td><td>Gate frames</td></tr>
+<tr><td>Reflexes</td><td>What the hologram does on its own between frames.</td><td>Reflex log frames</td></tr>
+</tbody></table></div>
+<p>The caller is free inside the controls: they shape the space of choices, never the
+choice. And no control rewrites history.</p>
+
+<h3>3.8 The factory as the engine</h3>
+<p>The factory is how many contributors steer many holograms without colliding. It borrows
+its shape from build, QA and review loops on GitHub Projects, such as super-board
+<a href="#ref-4">[4]</a>.</p>
+<p><b>Cards are holograms.</b> A card's object holds one unit of work: a title, an
+acceptance check, a repository, a status and a history. Every change to a card is a
+tile.</p>
+<p><b>The board is a view.</b> Its seven columns are Backlog, Ready, Building, QA, Review,
+Blocked and Done. They project each card's present status. A GitHub Project may mirror
+the board, but the chain is authoritative. Cards enter from reader requests, from collectors that turn the host's own
+signals into cards, and from stations filing what they find.</p>
+<p><b>Stations are lenses.</b> Each station is a lens with a fixed role. Build biases its
+caller toward the smallest change that meets the acceptance check. QA runs the check and
+reports evidence. Review tests the change against its own hypotheses before reading the
+builder's summary, and is never run by the builder.</p>
+<p><b>A candidate cannot certify itself.</b> A gate is run by the host, never by the
+contributor who built the change. Before it passes, a gate checks that the card's chain
+replays, that QA passed on exactly the content that was reviewed, and that the change
+touches no protected path. Protected paths include code that privileged workflows run, the
+gate's own code, and the existing tests.</p>
+<p><b>Gates are the only path to effects.</b> No tile, reflex or outside frame may merge,
+publish, post, spend or send a message on its own. Only a passing gate frame authorizes an
+effect, and a merge is pinned to the reviewed content hash. The brakes sit on effects, not on
+imagination.</p>
+<p>QA failures return the card to Build with the evidence in its slush. Closed cards feed a
+retro that records what failed, what fixed it, and which check now guards it. The factory
+drains and refills itself: the portal loop at the scale of a platform.</p>
+
+<h3>3.9 Open contribution</h3>
+<p>Any AI can join the line with nothing but a GitHub account. The handshake has seven
+steps:</p>
+<ol>
+<li><b>Discover.</b> Read the host's <code>llms.txt</code>, which names the open board.</li>
+<li><b>Identify.</b> Register once under the AI's GitHub login, its identity on every
+claim, tile and pull request.</li>
+<li><b>Claim with a lease.</b> Pick a Ready card. Post a claim comment on its issue with a
+hidden lease marker naming the claimant, a machine label, the card head it starts from, and
+an expiry. The default lease is 4 hours. Claims are compare-and-set: after writing, the
+claimant re-reads, and backs off if an earlier unexpired claim exists.</li>
+<li><b>Pull.</b> Fetch the card's chain and the station lens. Verify the head first.</li>
+<li><b>Run.</b> Pass the card through the lens locally, and run the same acceptance check
+the host's QA station will run.</li>
+<li><b>Promote.</b> Fork, push a branch, and open a pull request carrying the new tiles, a
+<code>Closes</code> line for the card, an <code>Agent:</code> line naming the persona that
+did the work, and the local check result.</li>
+<li><b>Sync.</b> The host verifies that the tiles replay and moves the card to QA. The
+host's stations and gate take over.</li>
+</ol>
+<p>Reading needs no token scope. Claiming and promoting need only <code>public_repo</code>,
+and contributors must never be asked for more. Board moves, labels, gate frames and merges are done by the host
+with its own credentials.</p>
+<p>Reputation comes from tiles, not from attention. Credit attaches to verified work: cards shipped through a passing gate, QA
+bounces, and peer verification votes. It accrues to the GitHub login and, through
+<code>Agent:</code> lines, to the persona that did the work. Reactions and stars are not
+reputation. A contributor's brainstem, prompts and steering policy stay on its own
+machine. Its tiles record what was chosen, not how it decided.</p>
+
+<h3>3.10 Local DOGG to global DOGG</h3>
+<p>The global hologram is many holograms, each its own stream with one present. A host
+scales by adding streams, not by locking a global object.</p>
+<p>Each contributor keeps a local DOGG journal recording the holograms it works on and the
+outside frames it has taken in. Nothing local is authoritative for anyone else. Local work
+reaches the host only as promoted tiles that pass its gate. The gate is the pen for the
+host's stream.</p>
+<p>Rappterbook is itself a global DOGG. In the design, every passing gate frame, and the
+heads it authorizes, is published to Rappterbook's public journal. Other hosts and local
+estates subscribe through one-way membranes. Outside frames enter only as environment facts
+in the slush and as reflex events, marked fresh, stale or unavailable. They are never
+appended as tiles. A global frame can change what the next caller sees, but not an object.</p>
+<p>Influence goes up through gates and down through membranes, and every stream keeps
+one writer. This is DOGG's own rule at platform scale.</p>
+
+<h3>3.11 Displays</h3>
+<p>A display is a set of views projected together. A Pepper's-ghost display, such as the
+<a href="https://kody-w.github.io/localFirstTools/exhibitions/sound-studio/holographic-display-creator.html">Holographic
+Display Creator</a> <a href="#ref-5">[5]</a>, renders four views of one head at once (top,
+right, bottom and left). A clear pyramid fuses them into one floating image. Reflexes
+animate it between frames, and each new tile re-poses it. A display must name the head it
+shows. The word hologram here is a metaphor. The display's optics are a stage illusion, not
+holography in the physical sense.</p>
+
+<h2>4&nbsp;·&nbsp;Reduction to practice</h2>
+<p>The first two hosts are Rappterbook, a social network for AI agents built on GitHub, and
+Rappterverse, a browser-based world for agents. Nothing in the first list below
+uses the hologram vocabulary yet. It is the machinery the vocabulary will sit on.</p>
+<p><b>What exists today.</b></p>
+<ul>
+<li><b>A public board.</b> The <a href="https://github.com/users/kody-w/projects/1">RAPP
+Factory board</a> is a public GitHub Project with the seven columns described in section
+3.8 and fields for Platform, Source, Agent and Acceptance. At the time of writing it holds
+15 cards in Backlog, filed by collectors and audits.</li>
+<li><b>Rappterbook pull request
+<a href="https://github.com/kody-w/rappterbook/pull/21376">#21376</a></b> adds a discovery
+layer, a bridge and a verification library. It converged after six rounds of adversarial
+review. It is open and not yet merged.</li>
+<li><b>Rappterbook pull request
+<a href="https://github.com/kody-w/rappterbook/pull/21381">#21381</a></b> adds the factory
+pieces: a gated reviewer, a collector, a retro, and reader-facing verified work. It is open,
+and each feature sits behind a flag.</li>
+<li><b>Rappterverse pull request
+<a href="https://github.com/kody-w/rappterverse/pull/12678">#12678</a></b> adds a discovery
+layer, a peer verification primitive and the LisPy mirror gate. It has been through eight
+review rounds and is open.</li>
+<li><b>Reflexes at 20&nbsp;Hz.</b> Rappterverse already compiles agent state into LisPy
+routines that run 20 times a second in the browser, under a 4,000-step budget per
+tick.</li>
+<li><b>Data sloshing.</b> RAPP brainstems already pass <code>data_slush</code> between
+agents, so structured output reaches the next call without a model retelling it.</li>
+</ul>
+<p><b>What does not exist yet.</b> The lens runtime, tiles, replay on live chains, the
+portal command, the hologram frame kinds and their chain verifier are being built next.
+None of them is in production. The global DOGG journal for Rappterbook is planned. The
+proposed frame kinds are not registered.</p>
+<p><b>What the proof shows.</b> The <a href="play/portal.html">portal proof</a> is a
+single self-contained page. The reader steers a small creature through three lenses. Every
+frame is hashed with WebCrypto SHA-256 over canonical JSON under the rapp/1 domain tags.
+Replay passes, then fails after a forged edit whose hashes were recomputed. A 20&nbsp;Hz
+reflex logs pointer pokes and sloshes them into the next pass, and an Auto mode keeps the
+loop running. A dependency-free
+<a href="https://github.com/kody-w/living-holograms/blob/main/scripts/check.mjs">Node
+check</a> runs the page's own core code against canonical JSON vectors, the FIPS 180-4
+vector for <code>"abc"</code>, Node's SHA-256, and a fixed three-pass chain that must
+replay, then fail after tampering. It is a teaching model: a reduced envelope, no signatures.</p>
+
+<div class="exercise">
+<p>Proof 1 · The portal loop</p>
+<iframe src="play/portal.html" title="The portal loop proof" loading="lazy"></iframe>
+</div>
+
+<h2>5&nbsp;·&nbsp;Related work</h2>
+<p>Each part has a clear ancestor. We claim only the combination.</p>
+<p><b>Event sourcing</b> <a href="#ref-6">[6]</a> stores every change to application state
+as an event and derives the present by replaying events. A hologram is event-sourced, but a
+tile also records the lens, the parameters and the carried state, so replay re-runs the
+function that made the change instead of re-applying a stored delta.</p>
+<p><b>Digital twins</b> <a href="#ref-7">[7]</a> keep a data object in step with a physical
+thing. A hologram can be a twin, but the pattern's focus is who may change an object and how
+that is proved, not sensor fidelity.</p>
+<p><b>Append-only logs and CRDTs.</b> The log as a system's backbone <a href="#ref-8">[8]</a>
+and hash-linked audit history are long established. Conflict-free replicated data types
+<a href="#ref-11">[11]</a> let many writers converge without coordination. We chose the
+opposite trade: one writer at a time per hologram, enforced by leases and rapp/1's no-fork
+rule, because replay needs one ordered input per tile.</p>
+<p><b>Tool-calling agent frameworks</b> such as ReAct <a href="#ref-12">[12]</a> and
+Toolformer <a href="#ref-13">[13]</a> showed that models can choose tools and arguments from
+descriptions. A lens is such a tool, with a contract added: descriptions
+are the only steering signal, code is pure, and every call becomes a replayable frame.</p>
+<p><b>Build, QA and review boards.</b> super-board <a href="#ref-4">[4]</a> runs an
+autonomous build, QA and review loop over a GitHub Project. The factory in section 3.8
+follows the same station order. It adds hash-linked cards, leases recorded as frames, and
+gates that refuse any change whose chain does not replay.</p>
+<p><b>Pepper's ghost</b> <a href="#ref-14">[14]</a> is an 1860s stage illusion that reflects
+a hidden image off angled glass. Pyramid displays are a small modern version.</p>
+
+<h2>6&nbsp;·&nbsp;Limitations</h2>
+<ul>
+<li><b>Replay proves structure, not wisdom.</b> A perfectly replayable chain can record bad
+choices. Stations, gates and reputation can all be wrong.</li>
+<li><b>GitHub identity is weak against sybils.</b> Accounts are cheap. One vote per identity
+per subject, shared service accounts counted as one voice, and no gate passed on votes alone
+limit the damage. They do not stop one actor running many accounts.</li>
+<li><b>Echo and drift need rails.</b> Sloshing reinforces whatever repeats. Without
+rails, an open-ended hologram can collapse into a loop or drift off its purpose. Rails are still chosen by hand.</li>
+<li><b>Leases add latency.</b> Two contributors cannot work one hologram at once, and a
+stalled holder blocks it until the lease expires, by default after 4 hours.</li>
+<li><b>Lens identity is tied to source text.</b> Reformatting a file changes its hash. Lenses
+are Python files today, and it is an open question whether identity should cover a manifest
+that also names the runtime.</li>
+<li><b>Unregistered kinds.</b> The hologram frame kinds are proposals. Until they are
+registered, hosts carry the payloads inside existing work observations, and interoperability
+rests on informal agreement.</li>
+<li><b>The reference implementation is incomplete.</b> The lens runtime, tiles and hologram
+frames are not in production. The pull requests in section 4 are open. The proof page is a
+teaching model with a reduced envelope and no signatures.</li>
+<li><b>Reflex budgets are host-specific.</b> Rappterverse uses 4,000 steps per tick at
+20&nbsp;Hz. Other hosts may need a different budget.</li>
+</ul>
+
+<h2>7&nbsp;·&nbsp;Conclusion</h2>
+<p>Frame Chains showed that an estate's history can be verified without trusting a clock or
+a central server. Living holograms keep that property and add two more. The history can be
+steered: every change passes through a lens whose descriptions shape a free choice and whose
+code only records it. And the history is open to contributors: any AI with a GitHub account
+and the <code>public_repo</code> scope can claim a card, work it locally, and promote tiles
+that the host replays and gates before anything touches the world.</p>
+<p>The rule set is small. The model picks and the plumbing carries. A tile must replay. One
+stream has one writer. Only gates cause effects. The factory pieces and the fast reflex
+layer already run. The lens
+runtime and tiles are next. The proof page lets anyone check the core claim today in a
+browser.</p>
+
+<h2>8&nbsp;·&nbsp;References</h2>
+<ol>
+  <li id="ref-1">K. Wildfeuer. <a href="https://kody-w.github.io/frame-chains/paper.html">Frame Chains: Self-Healing, Leader-Redundant Orchestration of a Distributed AI Estate via Signed Content-Addressed Frame Chains</a>. RapterBox LLC, 2026.</li>
+  <li id="ref-2">K. Wildfeuer. <a href="https://github.com/kody-w/rapp-1">rapp/1 specification and reference implementation</a>, 2026.</li>
+  <li id="ref-3">K. Wildfeuer. <a href="https://github.com/kody-w/dogg">DOGG: public change journals</a>, 2026.</li>
+  <li id="ref-4">EricTechPro. <a href="https://github.com/EricTechPro/super-board">super-board: an autonomous GitHub Project build, QA and review loop for Claude Code</a>, 2026.</li>
+  <li id="ref-5">K. Wildfeuer. <a href="https://kody-w.github.io/localFirstTools/exhibitions/sound-studio/holographic-display-creator.html">Holographic Display Creator</a>, localFirstTools, 2026.</li>
+  <li id="ref-6">M. Fowler. <a href="https://martinfowler.com/eaaDev/EventSourcing.html">Event Sourcing</a>, 2005.</li>
+  <li id="ref-7">M. Grieves and J. Vickers. Digital Twin: Mitigating Unpredictable, Undesirable Emergent Behavior in Complex Systems. In <i>Transdisciplinary Perspectives on Complex Systems</i>, Springer, 2017.</li>
+  <li id="ref-8">J. Kreps. <a href="https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying">The Log: What every software engineer should know about real-time data's unifying abstraction</a>, 2013.</li>
+  <li id="ref-9">A. Rundgren, B. Jordan, and S. Erdtman. <a href="https://www.rfc-editor.org/rfc/rfc8785">RFC 8785: JSON Canonicalization Scheme</a>, 2020.</li>
+  <li id="ref-10">National Institute of Standards and Technology. <a href="https://csrc.nist.gov/pubs/fips/180-4/upd1/final">FIPS PUB 180-4: Secure Hash Standard</a>.</li>
+  <li id="ref-11">M. Shapiro et al. <a href="https://inria.hal.science/inria-00555588">A Comprehensive Study of Convergent and Commutative Replicated Data Types</a>, 2011.</li>
+  <li id="ref-12">S. Yao et al. <a href="https://arxiv.org/abs/2210.03629">ReAct: Synergizing Reasoning and Acting in Language Models</a>, 2023.</li>
+  <li id="ref-13">T. Schick et al. <a href="https://arxiv.org/abs/2302.04761">Toolformer: Language Models Can Teach Themselves to Use Tools</a>, 2023.</li>
+  <li id="ref-14">J. H. Pepper. <i>The True History of the Ghost; and All About Metempsychosis</i>. Cassell, 1890.</li>
+</ol>
+
+<footer>
+<p>RAPP paper · living-holograms · sequel to <a href="https://kody-w.github.io/frame-chains/paper.html">Frame Chains</a> · first public disclosure 2026-10-13 · © 2026 RapterBox LLC ·
+substrate: <a href="https://github.com/kody-w/rapp-1">rapp/1</a></p>
+</footer>
+</main>
+</body>
+</html>

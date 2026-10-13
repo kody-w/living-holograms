@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Portal Loop</title>
+<meta name="description" content="A runnable proof for Living Holograms: steer a small creature through lenses, chain every pass with SHA-256, replay it, tamper with it, and watch reflexes run at 20 Hz.">
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("scoutTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --cp-bg: #f7f4ef;
+  --cp-bg-elevated: #fcfbf8;
+  --cp-surface: #ffffff;
+  --cp-surface-soft: #f5f5f5;
+  --cp-border: #dedede;
+  --cp-border-strong: #919191;
+  --cp-text: #242424;
+  --cp-text-muted: #5c5c5c;
+  --cp-accent: #b11f4b;
+  --cp-accent-hover: #9a1a41;
+  --cp-accent-soft: rgba(177, 31, 75, 0.08);
+  --cp-accent-fg: #ffffff;
+  --cp-success: #16a34a;
+  --cp-success-soft: #e8f6ec;
+  --cp-danger: #dc2626;
+  --cp-danger-soft: #fdecec;
+  --cp-warning: #b45309;
+  --cp-link: #005a9e;
+  --cp-creature: #b11f4b;
+  --cp-home: #919191;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cp-bg: #3d3b3a;
+  --cp-bg-elevated: #343231;
+  --cp-surface: #292929;
+  --cp-surface-soft: #2e2e2e;
+  --cp-border: #474747;
+  --cp-border-strong: #5f5f5f;
+  --cp-text: #dedede;
+  --cp-text-muted: #b8b8b8;
+  --cp-accent: #fd8ea1;
+  --cp-accent-hover: #fb7b91;
+  --cp-accent-soft: rgba(253, 142, 161, 0.14);
+  --cp-accent-fg: #1a1a1a;
+  --cp-success: #62d987;
+  --cp-success-soft: #183c27;
+  --cp-danger: #ff8a80;
+  --cp-danger-soft: #4a211f;
+  --cp-warning: #ffd166;
+  --cp-link: #6bb6ff;
+  --cp-creature: #fd8ea1;
+  --cp-home: #7a7a7a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--cp-bg);
+  color: var(--cp-text);
+  font: 16px/1.55 "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+a { color: var(--cp-link); text-underline-offset: 0.18em; }
+a:hover { color: var(--cp-accent-hover); }
+:focus-visible { outline: 3px solid var(--cp-accent); outline-offset: 3px; }
+.shell { width: calc(100% - 32px); max-width: 1040px; margin: 0 auto; padding: 24px 0 56px; }
+.topline { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 24px; font-size: 14px; }
+.kicker { margin: 0 0 7px; color: var(--cp-accent); font-size: 13px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1 { max-width: 780px; margin-bottom: 10px; font-size: clamp(30px, 6vw, 48px); line-height: 1.05; letter-spacing: -.03em; }
+h2 { font-size: 20px; margin-bottom: 8px; }
+h3 { font-size: 15px; margin-bottom: 6px; }
+.lede { max-width: 780px; color: var(--cp-text-muted); font-size: 18px; }
+.guide { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 22px 0 26px; }
+.box { border: 1px solid var(--cp-border); border-radius: 14px; background: var(--cp-bg-elevated); padding: 14px 16px; min-width: 0; }
+.box p:last-child, .box ul:last-child, .box ol:last-child { margin-bottom: 0; }
+.box ul, .box ol { padding-left: 1.2rem; margin: 0 0 .4rem; }
+.box li { margin: .2rem 0; }
+.grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); align-items: start; }
+.stack { display: grid; gap: 14px; min-width: 0; }
+.muted { color: var(--cp-text-muted); }
+.small { font-size: 13.5px; }
+canvas { display: block; width: 100%; height: 280px; border: 1px solid var(--cp-border); border-radius: 10px; background: var(--cp-surface); touch-action: manipulation; cursor: crosshair; }
+pre, code { font-family: Consolas, "SFMono-Regular", Menlo, "Courier New", monospace; }
+pre { margin: 0; padding: 10px; border: 1px solid var(--cp-border); border-radius: 10px; background: var(--cp-surface-soft); font-size: 12.5px; line-height: 1.45; overflow: auto; max-height: 260px; white-space: pre-wrap; word-break: break-word; }
+code { font-size: .88em; background: var(--cp-surface-soft); padding: .05em .3em; border-radius: 6px; }
+.stats { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13.5px; margin: 8px 0; }
+.stats b { font-variant-numeric: tabular-nums; }
+.lenses { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.lenses label { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 6px 12px; border: 1px solid var(--cp-border); border-radius: 999px; background: var(--cp-surface); cursor: pointer; font-weight: 600; font-size: 14px; }
+.lenses input { accent-color: var(--cp-accent); }
+.lenses label:has(input:checked) { border-color: var(--cp-accent); background: var(--cp-accent-soft); }
+.lens-desc { margin: 0 0 10px; padding: 10px 12px; border-left: 3px solid var(--cp-accent); background: var(--cp-surface); border-radius: 8px; }
+.field { margin: 0 0 12px; }
+.field label { display: block; font-weight: 650; font-size: 14px; }
+.field .desc { display: block; color: var(--cp-text-muted); font-size: 13.5px; margin: 2px 0 6px; }
+.field input, .field select { width: 100%; min-height: 42px; padding: 8px 10px; border: 1px solid var(--cp-border-strong); border-radius: 8px; background: var(--cp-surface); color: var(--cp-text); font: inherit; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button { min-height: 42px; padding: 8px 14px; border: 1px solid var(--cp-accent); border-radius: 10px; background: var(--cp-surface); color: var(--cp-accent); font: 650 14.5px "Segoe UI", Aptos, Calibri, sans-serif; cursor: pointer; }
+button.primary { background: var(--cp-accent); color: var(--cp-accent-fg); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.toggle { display: inline-flex; align-items: center; gap: 8px; font-weight: 650; font-size: 14px; min-height: 42px; }
+.toggle input { width: 20px; height: 20px; accent-color: var(--cp-accent); }
+input[type=range] { accent-color: var(--cp-accent); width: 150px; }
+.err { color: var(--cp-danger); font-size: 13.5px; min-height: 1.2em; margin: 6px 0 0; }
+.banner { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--cp-border); background: var(--cp-surface); font-size: 14.5px; margin: 10px 0 0; }
+.banner.ok { border-color: var(--cp-success); background: var(--cp-success-soft); }
+.banner.bad { border-color: var(--cp-danger); background: var(--cp-danger-soft); }
+.chain { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; max-height: 620px; overflow: auto; }
+.tile { border: 1px solid var(--cp-border); border-radius: 10px; background: var(--cp-surface); padding: 10px 12px; font-size: 13.5px; }
+.tile.ok { border-left: 4px solid var(--cp-success); }
+.tile.bad { border-left: 4px solid var(--cp-danger); }
+.tile .head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.tile .head b { font-size: 14.5px; }
+.tile dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 10px; margin: 6px 0 0; }
+.tile dt { color: var(--cp-text-muted); }
+.tile dd { margin: 0; font-family: Consolas, "SFMono-Regular", Menlo, monospace; font-size: 12.5px; overflow-wrap: anywhere; }
+.tile details { margin-top: 6px; }
+.tile summary { cursor: pointer; color: var(--cp-link); }
+.checks { margin: 6px 0 0; padding-left: 1.1rem; }
+.checks li.bad { color: var(--cp-danger); font-weight: 650; }
+.badge { display: inline-block; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid var(--cp-border); }
+.badge.ok { color: var(--cp-success); border-color: var(--cp-success); }
+.badge.bad { color: var(--cp-danger); border-color: var(--cp-danger); }
+footer { margin-top: 32px; padding-top: 14px; border-top: 1px solid var(--cp-border); color: var(--cp-text-muted); font-size: 13.5px; }
+@media (max-width: 820px) {
+  .grid, .guide { grid-template-columns: minmax(0, 1fr); }
+  canvas { height: 240px; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav class="topline" aria-label="Publication navigation">
+  <a href="../paper.html">Read the paper</a>
+  <a href="../index.html">Project home</a>
+  <a href="https://kody-w.github.io/frame-chains/paper.html">The prequel: Frame Chains</a>
+  <a href="https://github.com/kody-w/living-holograms">Source</a>
+</nav>
+
+<p class="kicker">Living Holograms · Proof 1</p>
+<h1>The portal loop, running in your browser</h1>
+<p class="lede">Mote is a small hologram: a creature with a position, a mood, energy and a short memory.
+You are the caller. You see each lens only as its descriptions, you choose parameters, and a
+deterministic <code>perform()</code> writes the next tile. Every tile is hashed with SHA-256 and
+chained to the one before it. Between passes, a reflex compiled from the present runs at 20&nbsp;Hz.</p>
+
+<div class="guide">
+  <section class="box">
+    <h2>What to do</h2>
+    <ol>
+      <li>Pick a lens. Fill the form. Press <b>Run one pass</b>.</li>
+      <li>Tap or click the creature's field a few times, then run another pass.</li>
+      <li>Press <b>Replay</b>. Then press <b>Tamper</b> and press <b>Replay</b> again.</li>
+      <li>Turn on <b>Auto</b> and move the cadence slider.</li>
+    </ol>
+  </section>
+  <section class="box">
+    <h2>What to watch</h2>
+    <ul>
+      <li>The <b>slush</b> panel: what the next pass will receive without anyone retelling it.</li>
+      <li>The <b>reflex log</b>: your pokes are counted, then carried into the next tile's <code>slush_in</code>.</li>
+      <li>The <b>chain</b>: each tile names <code>derived_from</code>, the lens particle, <code>params_hash</code> and the caller.</li>
+    </ul>
+  </section>
+  <section class="box">
+    <h2>What it proves</h2>
+    <ul>
+      <li>A tile can be re-derived from its input frame, its params and its <code>slush_in</code>. Replay checks that byte for byte.</li>
+      <li>An edited tile fails replay even when the forger recomputes its hashes.</li>
+      <li>State can carry from pass to pass as data, and a fast reflex layer can run with no model and no network.</li>
+    </ul>
+  </section>
+  <section class="box">
+    <h2>What it does not prove</h2>
+    <ul>
+      <li>That any choice was good. Replay checks structure, not wisdom.</li>
+      <li>Who the caller really was. Nothing here is signed.</li>
+      <li>Conformance with rapp/1. Frames here use a reduced envelope (kind, seq, prev, particle), not the full eleven-key frame, and the reflex log rides in the slush instead of its own frame.</li>
+    </ul>
+  </section>
+</div>
+
+<div class="grid">
+  <div class="stack">
+    <section class="box" aria-labelledby="body-h">
+      <h2 id="body-h">Body: reflexes at 20&nbsp;Hz</h2>
+      <p class="muted small">The routine below was compiled from the present object. It runs every 50&nbsp;ms with a step budget. Poke the field: the creature flees for a moment, and the poke is logged. Nothing the reflex does persists until a pass records it.</p>
+      <canvas id="field" aria-label="The creature's field. Tap or click to poke it." role="img"></canvas>
+      <div class="stats" aria-live="off">
+        <span>ticks since last pass <b id="st-ticks">0</b></span>
+        <span>pokes <b id="st-pokes">0</b></span>
+        <span>steps per tick <b id="st-ops">0</b> / 4000</span>
+        <span>measured rate <b id="st-hz">0</b> Hz</span>
+      </div>
+      <h3>Reflex routine (LisPy-style, compiled from the head)</h3>
+      <pre id="reflex-src"></pre>
+    </section>
+
+    <section class="box" aria-labelledby="slush-h">
+      <h2 id="slush-h">Slush: what carries into the next pass</h2>
+      <p class="muted small"><code>from_tile</code> is the <code>data_slush</code> the last lens emitted. <code>reflex</code> is the live reflex log. <code>env</code> is a host fact. The pass stores all of it as <code>slush_in</code>.</p>
+      <pre id="slush-next"></pre>
+      <details class="small" style="margin-top:8px"><summary>Slush the last pass received</summary><pre id="slush-last"></pre></details>
+    </section>
+  </div>
+
+  <div class="stack">
+    <section class="box" aria-labelledby="caller-h">
+      <h2 id="caller-h">Mind: you are the caller</h2>
+      <p class="muted small">This is everything a caller sees of a lens: its description and its parameter descriptions. <code>perform()</code> is hidden from the caller. Its source is in this page if you want to read it.</p>
+      <div class="lenses" id="lens-pick" role="radiogroup" aria-label="Lens"></div>
+      <p class="lens-desc" id="lens-desc"></p>
+      <form id="lens-form" autocomplete="off"></form>
+      <div class="row">
+        <button class="primary" id="run" type="button">Run one pass</button>
+        <label class="toggle"><input type="checkbox" id="auto"> Auto</label>
+        <label class="small" for="cadence">cadence <b id="cadence-v">3.0</b>&nbsp;s</label>
+        <input type="range" id="cadence" min="1" max="10" step="0.5" value="3">
+      </div>
+      <p class="err" id="form-err" role="alert"></p>
+      <p class="muted small">Auto uses a scripted caller (<code>auto-caller</code>, kind <code>process</code>). It reads the present and the slush, then picks a lens and parameters. It is not a model.</p>
+    </section>
+
+    <section class="box" aria-labelledby="present-h">
+      <h2 id="present-h">The present (head object)</h2>
+      <pre id="present"></pre>
+    </section>
+  </div>
+</div>
+
+<section class="box" aria-labelledby="chain-h" style="margin-top:14px">
+  <h2 id="chain-h">The chain, newest first</h2>
+  <div class="row">
+    <button id="replay" type="button">Replay</button>
+    <button id="tamper" type="button">Tamper</button>
+    <button id="reset" type="button">Reset to genesis</button>
+    <span class="small muted" id="chain-count"></span>
+  </div>
+  <div class="banner" id="replay-banner" role="status">Replay re-runs <code>perform()</code> for every tile from its input frame, params and <code>slush_in</code>, and re-derives every hash.</div>
+  <ol class="chain" id="chain"></ol>
+</section>
+
+<section class="box" style="margin-top:14px">
+  <h2>How the hashes are made</h2>
+  <p class="small">Values are serialized as canonical JSON: object keys sorted by UTF-16 code unit, no whitespace, strings escaped as in JSON, integers only. A hash is <code>H(tag, value) = SHA-256(tag + "\n" + canonical(value))</code>, written as hex. The payload's particle is <code>H("rapp/1:particle", payload)</code>. The frame hash is <code>H("rapp/1:wave", {kind, seq, prev, particle})</code>. A lens particle is <code>H("rapp/1:particle", {source})</code> over its declared metadata and its <code>perform</code> source. <code>params_hash</code> is <code>H("rapp/1:particle", params)</code>. Hashing uses the browser's WebCrypto.</p>
+</section>
+
+<footer>Living Holograms · proof 1 of the sequel to Frame Chains · © 2026 RapterBox LLC · runs entirely in this page, no network after load.</footer>
+</div>
+
+<script id="hologram-core">
+(() => {
+  "use strict";
+  const TAG_PARTICLE = "rapp/1:particle";
+  const TAG_WAVE = "rapp/1:wave";
+
+  // Canonical JSON: a small JCS subset (strings, safe integers, booleans, null, arrays, objects).
+  function canon(v) {
+    if (v === null) return "null";
+    if (v === true) return "true";
+    if (v === false) return "false";
+    if (typeof v === "number") {
+      if (!Number.isSafeInteger(v)) throw new TypeError("canon: only safe integers are allowed, got " + v);
+      return String(v === 0 ? 0 : v);
+    }
+    if (typeof v === "string") {
+      if (typeof v.isWellFormed === "function" && !v.isWellFormed()) throw new TypeError("canon: lone surrogate");
+      return JSON.stringify(v);
+    }
+    if (Array.isArray(v)) return "[" + v.map(canon).join(",") + "]";
+    if (typeof v === "object") {
+      const proto = Object.getPrototypeOf(v);
+      if (proto !== Object.prototype && proto !== null) throw new TypeError("canon: plain objects only");
+      const keys = Object.keys(v).sort();
+      return "{" + keys.map((k) => {
+        if (v[k] === undefined) throw new TypeError("canon: undefined value at " + k);
+        return JSON.stringify(k) + ":" + canon(v[k]);
+      }).join(",") + "}";
+    }
+    throw new TypeError("canon: unsupported type " + typeof v);
+  }
+
+  async function sha256hex(text) {
+    const bytes = new TextEncoder().encode(text);
+    const digest = await globalThis.crypto.subtle.digest("SHA-256", bytes);
+    return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  function H(tag, value) {
+    return sha256hex(tag + "\n" + canon(value));
+  }
+
+  const clone = (v) => JSON.parse(canon(v));
+
+  const GENESIS_OBJECT = {
+    schema: "living-holograms/creature-1",
+    name: "Mote",
+    x: 50, y: 50,
+    mood: "curious",
+    mood_cause: "it just woke up",
+    energy: 60,
+    memory: [],
+    felt: { pokes: 0 },
+    pass: 0
+  };
+
+  // Lenses. A caller sees name, description and parameters. perform() is hidden from the caller.
+  const LENSES = [
+    {
+      name: "Wander",
+      description: "Move the creature one step that follows from what it just felt. Small steps keep it calm. Long steps cost energy.",
+      parameters: {
+        type: "object",
+        required: ["direction", "distance"],
+        properties: {
+          direction: { type: "string", enum: ["north", "south", "east", "west", "stay"], description: "Which way it goes. Away from a poke reads as wary; toward the middle reads as settling." },
+          distance: { type: "integer", minimum: 0, maximum: 20, description: "How far, in field units from 0 to 20. Over 10 reads as restless." }
+        }
+      },
+      perform(object, params, slush) {
+        const o = JSON.parse(JSON.stringify(object));
+        const pokes = (slush.reflex && slush.reflex.pokes) || 0;
+        const step = { north: [0, -1], south: [0, 1], east: [1, 0], west: [-1, 0], stay: [0, 0] }[params.direction];
+        o.x = Math.max(0, Math.min(100, o.x + step[0] * params.distance));
+        o.y = Math.max(0, Math.min(100, o.y + step[1] * params.distance));
+        o.energy = Math.max(0, Math.min(100, o.energy - Math.floor(params.distance / 2) + Math.min(pokes, 5) * 2));
+        o.felt = { pokes: pokes };
+        o.pass = o.pass + 1;
+        const trail = ((slush.from_tile && slush.from_tile.trail) || []).concat([[o.x, o.y]]).slice(-6);
+        return { object: o, data_slush: { last: "Wander", trail: trail } };
+      }
+    },
+    {
+      name: "Mood",
+      description: "Set how the creature feels now, given what happened since the last pass. Name the cause in a few words.",
+      parameters: {
+        type: "object",
+        required: ["mood", "cause"],
+        properties: {
+          mood: { type: "string", enum: ["calm", "curious", "startled", "playful", "sleepy"], description: "The feeling after this pass. It changes how fast and how far the body moves between passes." },
+          cause: { type: "string", minLength: 1, maxLength: 60, description: "Why it feels this way. Past tense, at most 60 characters." }
+        }
+      },
+      perform(object, params, slush) {
+        const o = JSON.parse(JSON.stringify(object));
+        const pokes = (slush.reflex && slush.reflex.pokes) || 0;
+        o.mood = params.mood;
+        o.mood_cause = params.cause;
+        o.energy = Math.max(0, Math.min(100, o.energy + (params.mood === "sleepy" ? 8 : 0) + Math.min(pokes, 5) * 2));
+        o.felt = { pokes: pokes };
+        o.pass = o.pass + 1;
+        const trail = (slush.from_tile && slush.from_tile.trail) || [];
+        return { object: o, data_slush: { last: "Mood", trail: trail } };
+      }
+    },
+    {
+      name: "Remember",
+      description: "Keep one thing worth remembering about what just happened. The creature keeps only its five newest memories.",
+      parameters: {
+        type: "object",
+        required: ["memory", "importance"],
+        properties: {
+          memory: { type: "string", minLength: 1, maxLength: 80, description: "One short sentence the creature should keep. At most 80 characters." },
+          importance: { type: "integer", minimum: 1, maximum: 5, description: "1 is a passing detail, 5 is something it must never forget." }
+        }
+      },
+      perform(object, params, slush) {
+        const o = JSON.parse(JSON.stringify(object));
+        const pokes = (slush.reflex && slush.reflex.pokes) || 0;
+        o.memory = o.memory.concat([{ text: params.memory, importance: params.importance, pass: o.pass + 1 }]).slice(-5);
+        o.energy = Math.max(0, Math.min(100, o.energy + Math.min(pokes, 5) * 2));
+        o.felt = { pokes: pokes };
+        o.pass = o.pass + 1;
+        // Remember does not carry the trail forward. What the slush drops, fades.
+        return { object: o, data_slush: { last: "Remember", kept: o.memory.length } };
+      }
+    }
+  ];
+
+  const lensByName = (name) => LENSES.find((l) => l.name === name);
+
+  function lensSource(lens) {
+    return canon({ name: lens.name, description: lens.description, parameters: lens.parameters }) + "\n" + lens.perform.toString();
+  }
+  function lensParticle(lens) {
+    return H(TAG_PARTICLE, { source: lensSource(lens) });
+  }
+
+  // The caller's view: description and parameter descriptions, nothing else.
+  function callerView(lens) {
+    return { name: lens.name, description: lens.description, parameters: JSON.parse(JSON.stringify(lens.parameters)) };
+  }
+
+  function validate(schema, params) {
+    const errors = [];
+    if (!params || typeof params !== "object" || Array.isArray(params)) return ["params must be an object"];
+    for (const k of Object.keys(params)) if (!schema.properties[k]) errors.push("unknown parameter " + k);
+    for (const k of schema.required || []) if (!(k in params)) errors.push(k + " is required");
+    for (const [k, p] of Object.entries(schema.properties)) {
+      if (!(k in params)) continue;
+      const v = params[k];
+      if (p.type === "string") {
+        if (typeof v !== "string") { errors.push(k + " must be a string"); continue; }
+        if (p.minLength !== undefined && v.length < p.minLength) errors.push(k + " is too short");
+        if (p.maxLength !== undefined && v.length > p.maxLength) errors.push(k + " is longer than " + p.maxLength);
+      } else if (p.type === "integer") {
+        if (!Number.isSafeInteger(v)) { errors.push(k + " must be an integer"); continue; }
+        if (p.minimum !== undefined && v < p.minimum) errors.push(k + " is below " + p.minimum);
+        if (p.maximum !== undefined && v > p.maximum) errors.push(k + " is above " + p.maximum);
+      }
+      if (p.enum && !p.enum.includes(v)) errors.push(k + " must be one of " + p.enum.join(", "));
+    }
+    return errors;
+  }
+
+  async function makeFrame(kind, seq, prev, payload) {
+    const particle = await H(TAG_PARTICLE, payload);
+    const frame_hash = await H(TAG_WAVE, { kind, seq, prev, particle });
+    return { kind, seq, prev, particle, frame_hash, payload };
+  }
+
+  function genesis() {
+    return makeFrame("hologram.genesis", 0, null, {
+      schema: "rapp-hologram/1-genesis",
+      title: "Mote, a living hologram",
+      object: clone(GENESIS_OBJECT),
+      host: "play/portal.html"
+    });
+  }
+
+  const headSlush = (frame) => (frame.kind === "hologram.tile" ? frame.payload.data_slush : {});
+
+  function assembleSlush(head, reflexLog) {
+    return { from_tile: clone(headSlush(head)), reflex: clone(reflexLog), env: { pass: head.seq + 1 } };
+  }
+
+  async function pass(chain, lensName, params, caller, reflexLog) {
+    const head = chain[chain.length - 1];
+    const lens = lensByName(lensName);
+    if (!lens) throw new Error("unknown lens " + lensName);
+    const errors = validate(lens.parameters, params);
+    if (errors.length) { const e = new Error(errors.join("; ")); e.validation = errors; throw e; }
+    const slush_in = assembleSlush(head, reflexLog);
+    const out = lens.perform(clone(head.payload.object), clone(params), clone(slush_in));
+    const payload = {
+      schema: "rapp-hologram/1-tile",
+      object: out.object,
+      data_slush: out.data_slush,
+      derived_from: head.frame_hash,
+      lens: { name: lens.name, particle: await lensParticle(lens) },
+      params: clone(params),
+      params_hash: await H(TAG_PARTICLE, params),
+      slush_in,
+      caller: clone(caller),
+      lease: null
+    };
+    canon(payload); // throws if anything is not canonical-safe
+    return chain.concat([await makeFrame("hologram.tile", head.seq + 1, head.frame_hash, payload)]);
+  }
+
+  async function replay(chain) {
+    const results = [];
+    for (let i = 0; i < chain.length; i++) {
+      const f = chain[i];
+      const checks = [];
+      const add = (name, ok) => checks.push({ name, ok });
+      const particle = await H(TAG_PARTICLE, f.payload);
+      add("payload particle re-derives", particle === f.particle);
+      const fh = await H(TAG_WAVE, { kind: f.kind, seq: f.seq, prev: f.prev, particle: f.particle });
+      add("frame hash re-derives", fh === f.frame_hash);
+      add("seq is " + i, f.seq === i);
+      if (i === 0) {
+        add("genesis has no prev", f.prev === null && f.kind === "hologram.genesis");
+      } else {
+        const prev = chain[i - 1];
+        const p = f.payload;
+        add("prev links to frame " + (i - 1), f.prev === prev.frame_hash);
+        add("derived_from names the input frame", p.derived_from === prev.frame_hash);
+        const lens = lensByName(p.lens && p.lens.name);
+        add("lens particle matches a known lens", !!lens && p.lens.particle === await lensParticle(lens));
+        add("params validate against the lens schema", !!lens && validate(lens.parameters, p.params).length === 0);
+        add("params_hash re-derives", p.params_hash === await H(TAG_PARTICLE, p.params));
+        add("slush_in.from_tile is the previous data_slush", canon(p.slush_in.from_tile) === canon(headSlush(prev)));
+        let same = false;
+        if (lens) {
+          try {
+            const out = lens.perform(clone(prev.payload.object), clone(p.params), clone(p.slush_in));
+            same = canon(out.object) === canon(p.object) && canon(out.data_slush) === canon(p.data_slush);
+          } catch (e) { same = false; }
+        }
+        add("replay: perform() reproduces object and data_slush", same);
+      }
+      results.push({ seq: f.seq, ok: checks.every((c) => c.ok), checks });
+    }
+    return { ok: results.every((r) => r.ok), results };
+  }
+
+  // A forger edits the head tile's object and honestly recomputes its hashes.
+  async function tamper(chain) {
+    const i = chain.length - 1;
+    if (i < 1) throw new Error("nothing to tamper with: the chain has no tile yet");
+    const f = clone(chain[i]);
+    f.payload.object.energy = 100;
+    f.payload.object.memory = f.payload.object.memory.concat([{ text: "nobody ever poked me", importance: 5, pass: f.payload.object.pass }]).slice(-5);
+    const resealed = await makeFrame(f.kind, f.seq, f.prev, f.payload);
+    return chain.slice(0, i).concat([resealed]);
+  }
+
+  // Reflexes: a tiny LisPy-style routine compiled from the present. No model, no network.
+  const MOOD_PERIOD = { calm: 80, curious: 40, startled: 16, playful: 24, sleepy: 120 };
+  function compileReflex(object) {
+    const period = MOOD_PERIOD[object.mood] || 60;
+    const radius = 2 + Math.floor(object.energy / 10);
+    const flee = object.mood === "startled" ? 24 : object.mood === "sleepy" ? 6 : 12;
+    return "(reflex\n" +
+      "  (home " + object.x + " " + object.y + ")\n" +
+      "  (orbit " + radius + " " + period + ")\n" +
+      "  (on-poke (flee " + flee + "))\n" +
+      "  (glow " + object.energy + "))";
+  }
+
+  function parseLisp(src) {
+    const tokens = src.replace(/;[^\n]*/g, "").replace(/\(/g, " ( ").replace(/\)/g, " ) ").trim().split(/\s+/);
+    let i = 0;
+    function read() {
+      const t = tokens[i++];
+      if (t === undefined) throw new Error("unexpected end");
+      if (t === "(") { const list = []; while (tokens[i] !== ")") { if (i >= tokens.length) throw new Error("missing )"); list.push(read()); } i++; return list; }
+      if (t === ")") throw new Error("unexpected )");
+      return /^-?\d+$/.test(t) ? Number(t) : t;
+    }
+    const form = read();
+    if (i !== tokens.length) throw new Error("trailing tokens");
+    return form;
+  }
+
+  function makeReflex(src, budget) {
+    const form = parseLisp(src);
+    if (form[0] !== "reflex") throw new Error("not a reflex");
+    const r = { home: [50, 50], orbit: [4, 60], flee: 12, glow: 50 };
+    for (const clause of form.slice(1)) {
+      if (clause[0] === "home") r.home = [clause[1], clause[2]];
+      else if (clause[0] === "orbit") r.orbit = [clause[1], clause[2]];
+      else if (clause[0] === "on-poke" && clause[1][0] === "flee") r.flee = clause[1][1];
+      else if (clause[0] === "glow") r.glow = clause[1];
+    }
+    const limit = budget || 4000;
+    const state = { off: [0, 0], pos: r.home.slice() };
+    return {
+      routine: r,
+      step(tick, pokes) {
+        let ops = 0;
+        const spend = (n) => { ops += n; if (ops > limit) throw new Error("reflex budget exceeded"); };
+        for (const p of pokes) {
+          spend(6);
+          const dx = state.pos[0] - p.x, dy = state.pos[1] - p.y;
+          const len = Math.max(1, Math.hypot(dx, dy));
+          state.off[0] += (dx / len) * r.flee;
+          state.off[1] += (dy / len) * r.flee;
+        }
+        spend(12);
+        state.off[0] *= 0.9; state.off[1] *= 0.9;
+        const a = (2 * Math.PI * (tick % r.orbit[1])) / r.orbit[1];
+        state.pos = [
+          Math.max(0, Math.min(100, r.home[0] + r.orbit[0] * Math.cos(a) + state.off[0])),
+          Math.max(0, Math.min(100, r.home[1] + r.orbit[0] * Math.sin(a) + state.off[1]))
+        ];
+        return { pos: state.pos.slice(), ops };
+      }
+    };
+  }
+
+  // A scripted caller for Auto mode. It reads only the caller's view, the present and the slush.
+  const DIRS = ["east", "south", "west", "north"];
+  function autoCaller(present, slush) {
+    const pokes = (slush.reflex && slush.reflex.pokes) || 0;
+    const n = present.pass;
+    if (pokes >= 3) return { lens: "Mood", params: { mood: "startled", cause: "was poked " + pokes + " times" } };
+    if (pokes > 0) return { lens: "Mood", params: { mood: "playful", cause: "someone said hello" } };
+    if (present.energy < 20 && present.mood !== "sleepy") return { lens: "Mood", params: { mood: "sleepy", cause: "ran low on energy" } };
+    if (n % 5 === 4) return { lens: "Remember", params: { memory: "felt " + present.mood + " near " + present.x + "," + present.y, importance: 1 + (n % 5) } };
+    if (n % 7 === 6) return { lens: "Mood", params: { mood: present.energy > 50 ? "curious" : "calm", cause: "the field went quiet" } };
+    const far = Math.abs(present.x - 50) > 30 || Math.abs(present.y - 50) > 30;
+    let direction = DIRS[n % 4];
+    if (far) direction = Math.abs(present.x - 50) > Math.abs(present.y - 50) ? (present.x > 50 ? "west" : "east") : (present.y > 50 ? "north" : "south");
+    return { lens: "Wander", params: { direction, distance: 4 + (n % 3) * 3 } };
+  }
+
+  globalThis.HologramCore = {
+    TAG_PARTICLE, TAG_WAVE, canon, sha256hex, H, GENESIS_OBJECT, LENSES, lensByName, lensSource,
+    lensParticle, callerView, validate, makeFrame, genesis, assembleSlush, pass, replay, tamper,
+    compileReflex, parseLisp, makeReflex, autoCaller
+  };
+})();
+</script>
+
+<script>
+(() => {
+  "use strict";
+  const C = globalThis.HologramCore;
+  const $ = (id) => document.getElementById(id);
+  const short = (h) => (h ? h.slice(0, 12) + "…" : "null");
+  const pretty = (v) => JSON.stringify(JSON.parse(C.canon(v)), null, 2);
+
+  let chain = [];
+  let untampered = null;
+  let busy = false;
+  let lastReplay = null;
+  let reflex = null;
+  let tick = 0;
+  let log = null;
+  let pendingPokes = [];
+  let autoTimer = null;
+
+  // ---------- reflex layer ----------
+  const canvas = $("field");
+  const ctx = canvas.getContext("2d");
+  let ripples = [];
+  let pos = [50, 50];
+
+  function freshLog() { return { ticks: 0, pokes: 0, events: [], final: { x: 50, y: 50 } }; }
+
+  function recompileReflex() {
+    const obj = chain[chain.length - 1].payload.object;
+    const src = C.compileReflex(obj);
+    $("reflex-src").textContent = src;
+    reflex = C.makeReflex(src, 4000);
+    tick = 0;
+    log = freshLog();
+    log.final = { x: obj.x, y: obj.y };
+  }
+
+  function toGrid(evt) {
+    const r = canvas.getBoundingClientRect();
+    return {
+      x: Math.max(0, Math.min(100, Math.round(((evt.clientX - r.left) / r.width) * 100))),
+      y: Math.max(0, Math.min(100, Math.round(((evt.clientY - r.top) / r.height) * 100)))
+    };
+  }
+  canvas.addEventListener("pointerdown", (evt) => {
+    const p = toGrid(evt);
+    pendingPokes.push(p);
+    ripples.push({ x: p.x, y: p.y, age: 0 });
+  });
+
+  let hzCount = 0, hzStart = performance.now();
+  function onTick() {
+    if (!reflex) return;
+    tick += 1;
+    const pokes = pendingPokes; pendingPokes = [];
+    let out;
+    try { out = reflex.step(tick, pokes); } catch (e) { out = { pos, ops: 0 }; }
+    pos = out.pos;
+    log.ticks += 1;
+    for (const p of pokes) {
+      log.pokes += 1;
+      log.events = log.events.concat([{ t: tick, x: p.x, y: p.y }]).slice(-8);
+    }
+    log.final = { x: Math.round(pos[0]), y: Math.round(pos[1]) };
+    $("st-ticks").textContent = log.ticks;
+    $("st-pokes").textContent = log.pokes;
+    $("st-ops").textContent = out.ops;
+    hzCount += 1;
+    const now = performance.now();
+    if (now - hzStart >= 1000) { $("st-hz").textContent = (hzCount * 1000 / (now - hzStart)).toFixed(1); hzCount = 0; hzStart = now; }
+    if (tick % 4 === 0) renderSlushNext();
+    draw();
+  }
+  setInterval(onTick, 50);
+
+  function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  function draw() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) { canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    const X = (x) => (x / 100) * w, Y = (y) => (y / 100) * h;
+    const head = chain[chain.length - 1];
+    const obj = head.payload.object;
+    const muted = cssVar("--cp-home"), accent = cssVar("--cp-creature"), text = cssVar("--cp-text");
+    // trail carried in slush
+    const trail = (head.kind === "hologram.tile" && head.payload.data_slush.trail) || [];
+    ctx.fillStyle = muted;
+    trail.forEach(([tx, ty], i) => { ctx.globalAlpha = 0.25 + (0.5 * i) / Math.max(1, trail.length); ctx.beginPath(); ctx.arc(X(tx), Y(ty), 3, 0, Math.PI * 2); ctx.fill(); });
+    ctx.globalAlpha = 1;
+    // home
+    ctx.strokeStyle = muted; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.arc(X(obj.x), Y(obj.y), 10, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    // ripples
+    ripples = ripples.filter((r) => r.age < 16);
+    for (const r of ripples) { r.age += 1; ctx.globalAlpha = 1 - r.age / 16; ctx.strokeStyle = text; ctx.beginPath(); ctx.arc(X(r.x), Y(r.y), 4 + r.age * 2, 0, Math.PI * 2); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+    // creature
+    const cx = X(pos[0]), cy = Y(pos[1]);
+    const glow = reflex ? reflex.routine.glow : 50;
+    ctx.shadowColor = accent; ctx.shadowBlur = 4 + glow / 5;
+    ctx.fillStyle = accent; ctx.beginPath(); ctx.arc(cx, cy, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = cssVar("--cp-surface");
+    const sleepy = obj.mood === "sleepy";
+    if (sleepy) { ctx.fillRect(cx - 6, cy - 3, 4, 1.5); ctx.fillRect(cx + 2, cy - 3, 4, 1.5); }
+    else { ctx.beginPath(); ctx.arc(cx - 4, cy - 2, obj.mood === "startled" ? 3 : 2, 0, Math.PI * 2); ctx.arc(cx + 4, cy - 2, obj.mood === "startled" ? 3 : 2, 0, Math.PI * 2); ctx.fill(); }
+    ctx.fillStyle = text; ctx.font = "12px system-ui, sans-serif";
+    ctx.fillText(obj.name + " · " + obj.mood + " · energy " + obj.energy + " · head #" + head.seq, 8, h - 8);
+  }
+
+  // ---------- caller form ----------
+  let lensName = "Wander";
+  function renderLensPick() {
+    const pick = $("lens-pick");
+    pick.textContent = "";
+    for (const lens of C.LENSES) {
+      const label = document.createElement("label");
+      const input = document.createElement("input");
+      input.type = "radio"; input.name = "lens"; input.value = lens.name; input.checked = lens.name === lensName;
+      input.addEventListener("change", () => { lensName = lens.name; renderForm(); });
+      label.append(input, document.createTextNode(lens.name));
+      pick.append(label);
+    }
+  }
+  function renderForm() {
+    const view = C.callerView(C.lensByName(lensName));
+    $("lens-desc").textContent = view.description;
+    const form = $("lens-form");
+    form.textContent = "";
+    for (const [key, p] of Object.entries(view.parameters.properties)) {
+      const wrap = document.createElement("div"); wrap.className = "field";
+      const label = document.createElement("label"); label.htmlFor = "p-" + key; label.textContent = key + " (" + p.type + ")";
+      const desc = document.createElement("span"); desc.className = "desc"; desc.textContent = p.description;
+      let input;
+      if (p.enum) {
+        input = document.createElement("select");
+        for (const v of p.enum) { const o = document.createElement("option"); o.value = v; o.textContent = v; input.append(o); }
+      } else if (p.type === "integer") {
+        input = document.createElement("input"); input.type = "number"; input.inputMode = "numeric"; input.step = "1";
+        if (p.minimum !== undefined) input.min = p.minimum;
+        if (p.maximum !== undefined) input.max = p.maximum;
+        input.value = String(Math.min(p.maximum ?? 5, Math.max(p.minimum ?? 0, 5)));
+      } else {
+        input = document.createElement("input"); input.type = "text";
+        if (p.maxLength) input.maxLength = p.maxLength;
+        input.placeholder = key === "cause" ? "e.g. heard a noise" : "e.g. the east corner is warm";
+      }
+      input.id = "p-" + key; input.dataset.key = key; input.dataset.type = p.type;
+      wrap.append(label, desc, input);
+      form.append(wrap);
+    }
+    $("form-err").textContent = "";
+  }
+  function readForm() {
+    const params = {};
+    for (const el of $("lens-form").querySelectorAll("[data-key]")) {
+      const raw = el.value;
+      if (el.dataset.type === "integer") params[el.dataset.key] = raw.trim() === "" ? NaN : Number(raw);
+      else params[el.dataset.key] = raw.trim();
+    }
+    for (const k of Object.keys(params)) if (Number.isNaN(params[k])) params[k] = "not a number";
+    return params;
+  }
+
+  // ---------- passes ----------
+  async function runPass(lens, params, caller) {
+    if (busy || untampered) return;
+    busy = true;
+    try {
+      const slushLog = JSON.parse(C.canon(log));
+      chain = await C.pass(chain, lens, params, caller, slushLog);
+      lastReplay = null;
+      recompileReflex();
+      renderAll();
+      $("form-err").textContent = "";
+    } catch (e) {
+      $("form-err").textContent = "Rejected, nothing appended: " + e.message;
+    } finally { busy = false; }
+  }
+
+  $("run").addEventListener("click", () => runPass(lensName, readForm(), { id: "you", kind: "person" }));
+  $("lens-form").addEventListener("submit", (e) => { e.preventDefault(); $("run").click(); });
+
+  function autoPass() {
+    const head = chain[chain.length - 1];
+    const choice = C.autoCaller(head.payload.object, C.assembleSlush(head, log));
+    runPass(choice.lens, choice.params, { id: "auto-caller", kind: "process" });
+  }
+  function setAuto() {
+    clearInterval(autoTimer); autoTimer = null;
+    const secs = Number($("cadence").value);
+    $("cadence-v").textContent = secs.toFixed(1);
+    if ($("auto").checked) autoTimer = setInterval(autoPass, secs * 1000);
+  }
+  $("auto").addEventListener("change", setAuto);
+  $("cadence").addEventListener("input", setAuto);
+
+  // ---------- replay / tamper ----------
+  $("replay").addEventListener("click", async () => {
+    lastReplay = await C.replay(chain);
+    renderChain();
+    const b = $("replay-banner");
+    const tiles = chain.length - 1;
+    if (lastReplay.ok) {
+      b.className = "banner ok";
+      b.textContent = "Replay passed: genesis and " + tiles + " tile" + (tiles === 1 ? "" : "s") + ". Every hash re-derives and every perform() reproduces its tile byte for byte.";
+    } else {
+      const bad = lastReplay.results.filter((r) => !r.ok);
+      const first = bad[0];
+      const failed = first.checks.filter((c) => !c.ok).map((c) => c.name).join("; ");
+      b.className = "banner bad";
+      b.textContent = "Replay failed at frame #" + first.seq + ": " + failed + ". " + (untampered ? "The forger recomputed the hashes, so the hash checks pass. Replay still catches the edit, because perform() on the input frame does not produce this object." : "");
+    }
+  });
+  $("tamper").addEventListener("click", async () => {
+    if (untampered) {
+      chain = untampered; untampered = null;
+      $("tamper").textContent = "Tamper";
+      $("replay-banner").className = "banner";
+      $("replay-banner").textContent = "Tamper undone. Press Replay to check again.";
+    } else {
+      if (chain.length < 2) { $("replay-banner").className = "banner"; $("replay-banner").textContent = "Run at least one pass first. There is no tile to tamper with yet."; return; }
+      untampered = chain;
+      chain = await C.tamper(chain);
+      $("tamper").textContent = "Undo tamper";
+      $("replay-banner").className = "banner bad";
+      $("replay-banner").textContent = "The head tile was edited: energy set to 100 and a false memory added. Its particle and frame hash were recomputed so they look valid. Passes are paused. Press Replay.";
+      $("auto").checked = false; setAuto();
+    }
+    lastReplay = null;
+    $("run").disabled = !!untampered;
+    recompileReflex();
+    renderAll();
+  });
+  $("reset").addEventListener("click", async () => {
+    $("auto").checked = false; setAuto();
+    untampered = null; $("tamper").textContent = "Tamper"; $("run").disabled = false;
+    chain = [await C.genesis()];
+    lastReplay = null;
+    $("replay-banner").className = "banner";
+    $("replay-banner").textContent = "Back at genesis.";
+    recompileReflex();
+    renderAll();
+  });
+
+  // ---------- rendering ----------
+  function renderSlushNext() {
+    $("slush-next").textContent = pretty(C.assembleSlush(chain[chain.length - 1], log));
+  }
+  function row(dl, k, v) { const dt = document.createElement("dt"); dt.textContent = k; const dd = document.createElement("dd"); dd.textContent = v; dl.append(dt, dd); }
+  function renderChain() {
+    const list = $("chain");
+    list.textContent = "";
+    $("chain-count").textContent = chain.length + " frame" + (chain.length === 1 ? "" : "s");
+    for (let i = chain.length - 1; i >= 0; i--) {
+      const f = chain[i];
+      const li = document.createElement("li");
+      const res = lastReplay && lastReplay.results[i];
+      li.className = "tile" + (res ? (res.ok ? " ok" : " bad") : "");
+      const head = document.createElement("div"); head.className = "head";
+      const title = document.createElement("b");
+      title.textContent = "#" + f.seq + " " + (f.kind === "hologram.genesis" ? "genesis" : f.payload.lens.name);
+      head.append(title);
+      if (f.kind === "hologram.tile") { const s = document.createElement("span"); s.className = "muted"; s.textContent = "by " + f.payload.caller.id + " (" + f.payload.caller.kind + ")"; head.append(s); }
+      if (i === chain.length - 1) { const s = document.createElement("span"); s.className = "badge"; s.textContent = "head"; head.append(s); }
+      if (res) { const s = document.createElement("span"); s.className = "badge " + (res.ok ? "ok" : "bad"); s.textContent = res.ok ? "replay pass" : "replay FAIL"; head.append(s); }
+      li.append(head);
+      const dl = document.createElement("dl");
+      row(dl, "frame_hash", f.frame_hash);
+      if (f.kind === "hologram.tile") {
+        const p = f.payload;
+        row(dl, "derived_from", short(p.derived_from));
+        row(dl, "lens particle", short(p.lens.particle));
+        row(dl, "params", C.canon(p.params));
+        row(dl, "params_hash", short(p.params_hash));
+        row(dl, "slush_in", "from_tile " + C.canon(p.slush_in.from_tile).slice(0, 60) + (C.canon(p.slush_in.from_tile).length > 60 ? "…" : "") + " · pokes " + p.slush_in.reflex.pokes + " · ticks " + p.slush_in.reflex.ticks);
+      } else {
+        row(dl, "title", f.payload.title);
+      }
+      li.append(dl);
+      if (res && !res.ok) {
+        const ul = document.createElement("ul"); ul.className = "checks";
+        for (const c of res.checks) { const it = document.createElement("li"); it.className = c.ok ? "" : "bad"; it.textContent = (c.ok ? "pass: " : "FAIL: ") + c.name; ul.append(it); }
+        li.append(ul);
+      }
+      const det = document.createElement("details");
+      const sum = document.createElement("summary"); sum.textContent = "Full frame";
+      const pre = document.createElement("pre"); pre.textContent = pretty(f);
+      det.append(sum, pre);
+      li.append(det);
+      list.append(li);
+    }
+  }
+  function renderAll() {
+    const head = chain[chain.length - 1];
+    $("present").textContent = pretty(head.payload.object);
+    $("slush-last").textContent = head.kind === "hologram.tile" ? pretty(head.payload.slush_in) : "(genesis received no slush)";
+    renderSlushNext();
+    renderChain();
+  }
+
+  (async () => {
+    if (!globalThis.crypto || !globalThis.crypto.subtle) {
+      $("replay-banner").className = "banner bad";
+      $("replay-banner").textContent = "This browser does not expose WebCrypto here. Open the page over https or from localhost.";
+      return;
+    }
+    chain = [await C.genesis()];
+    renderLensPick();
+    renderForm();
+    recompileReflex();
+    renderAll();
+  })();
+})();
+</script>
+</body>
+</html>
